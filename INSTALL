@@ -1,0 +1,27 @@
+Make sure the file is executable and place it anywhere in your path.
+
+BASH COMPLETION
+===============
+To enable bash completion for mussh, which supports multiple host completion:
+
+1. Copy the mussh-completion.bash file to your bash completion directory:
+   
+   # For system-wide installation:
+   sudo cp mussh-completion.bash /etc/bash_completion.d/mussh
+   
+   # Or for user-specific installation:
+   mkdir -p ~/.local/share/bash-completion/completions
+   cp mussh-completion.bash ~/.local/share/bash-completion/completions/mussh
+
+2. To enable completion in your current shell session:
+   
+   source mussh-completion.bash
+
+The completion script supports tab-completion for multiple hosts after the -h flag:
+   
+   mussh -h host1<tab>
+   # Shows available hosts to complete host2
+   
+   mussh -h host1 host2<tab> 
+   # Shows available hosts to complete host3
+
