@@ -1,0 +1,15 @@
+# RPM build files
+*.rpm
+*.spec.in
+build-tmp/
+rpmbuild/
+
+# Backup files
+*~
+*.bak
+*.swp
+*.tmp
+
+# OS specific files
+.DS_Store
+Thumbs.db
