@@ -2,9 +2,9 @@ class Mussh < Formula
   desc "Multi-host SSH command execution tool"
   homepage "https://github.com/DigitalCyberSoft/mussh"
   url "https://github.com/DigitalCyberSoft/mussh/archive/v1.2.1.tar.gz"
-  sha256 "PLACEHOLDER_SHA256"  # This needs to be calculated from the actual tarball
+  sha256 "61daf73061d10a784c53a4c84b1d594f0b9abc63d0a732d84ff383ca02ef4ed5"
   license "GPL-2.0"
-  head "https://github.com/DigitalCyberSoft/mussh.git", branch: "master"
+  head "https://github.com/DigitalCyberSoft/mussh.git", branch: "main"
 
   depends_on "bash"
 
