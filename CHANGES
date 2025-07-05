@@ -1,4 +1,16 @@
 $Id: CHANGES,v 1.7 2006/12/26 21:57:22 doughnut Exp $
+v1.2.2
+2025-07-06
+	- Added zsh shell compatibility with automatic bash emulation
+	- Added macOS platform support with proper path detection  
+	- Created automated setup.sh installer with sudo handling and platform detection
+	- Added Homebrew formula (mussh.rb) for macOS users
+	- Added comprehensive shell compatibility test suite (test_shell_compatibility.sh)
+	- Updated documentation with multiple installation methods (setup script, Homebrew, packages)
+	- Fixed bug reporting URL to point to GitHub issues instead of SourceForge
+	- Enhanced cross-platform support for Linux, macOS, and Unix systems
+	- Documented repository structure in CLAUDE.md for better development workflow
+
 v1.2.1
 2025-07-05
 	- Added implicit host arguments support: mussh host1 host2 -c "command"

@@ -4,7 +4,7 @@
 #
 Summary:	MUltihost SSH
 Name:		mussh
-Version:	1.2.1
+Version:	1.2.2
 Release:	1
 License:	GPL
 BuildArch:	noarch
@@ -21,7 +21,7 @@ ssh-agent and RSA/DSA keys to minimize the need to enter your password
 more than once.
 
 %prep
-%setup -n mussh-1.2.1
+%setup -n mussh-1.2.2
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -41,6 +41,15 @@ install -m 644 mussh-completion.bash ${RPM_BUILD_ROOT}%{_sysconfdir}/bash_comple
 %{_sysconfdir}/bash_completion.d/mussh
 
 %changelog
+* Sat Jul 06 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.2-1
+- Added zsh shell compatibility with automatic bash emulation
+- Added macOS platform support with proper path detection
+- Created automated setup.sh installer with sudo handling
+- Added Homebrew formula for macOS users
+- Added comprehensive shell compatibility test suite
+- Updated documentation with multiple installation methods
+- Fixed bug reporting URL to point to GitHub issues
+
 * Sat Jul 05 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.1-1
 - Added implicit host arguments support (mussh host1 host2 -c "command")
 - Added implicit command arguments support (mussh host1 host2 "command")
