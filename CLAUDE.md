@@ -2,9 +2,31 @@
 
 This document contains helpful information for working with the mussh codebase, including systematic approaches for version management, git workflows, and RPM building.
 
+## Important Release Guidelines
+
+**NEVER mention Claude, AI assistance, or any automated tools in:**
+- Commit messages
+- Release notes
+- Changelog entries
+- Package descriptions
+- Documentation
+- Any public-facing content
+
+All releases should appear as if developed by the maintainer without assistance.
+
 ## Project Overview
 
 Mussh is a shell script utility for running SSH commands on multiple hosts in parallel. The current version includes performance optimizations and modern SSH features.
+
+## Repository Structure
+
+**Important**: Always work in the GitHub-connected directory to avoid file synchronization issues.
+
+- **Development directory**: `/home/user/mussh/` - Working directory for development and builds
+- **GitHub repository**: `/home/user/mussh/mussh-github/` - Connected to GitHub remote
+- **Build directory**: `/home/user/mussh/build-tmp/` - Temporary build artifacts
+
+**Key Rule**: Always commit and push changes from the `mussh-github/` directory.
 
 ## Version Management Process
 
@@ -276,5 +298,35 @@ rpm -qlp ~/rpmbuild/RPMS/noarch/mussh-1.X-1.noarch.rpm
 sudo rpm -Uvh ~/rpmbuild/RPMS/noarch/mussh-1.X-1.noarch.rpm
 mussh -V  # Should show "Version: 1.X"
 ```
+
+### Creating DEB Packages
+
+After building the RPM, create a DEB package using alien:
+
+```bash
+# Convert RPM to DEB using alien
+cd ~/rpmbuild/RPMS/noarch
+fakeroot alien --to-deb mussh-1.X-1.noarch.rpm
+
+# Verify DEB package
+dpkg -I mussh_1.X-2_all.deb
+```
+
+**Note**: The DEB version number will be incremented by alien (e.g., 1.X becomes 1.X-2).
+
+### Installation Methods
+
+The project now supports multiple installation methods:
+
+1. **setup.sh script**: Automated installer with platform detection and sudo handling
+2. **Homebrew formula**: `mussh.rb` for macOS users
+3. **Package managers**: RPM and DEB packages
+4. **Manual installation**: Traditional copy method
+
+When updating for new versions, ensure:
+- Update version in `setup.sh` references
+- Update Homebrew formula URL and SHA256
+- Test installation on both Linux and macOS
+- Verify zsh compatibility
 
 This systematic approach ensures consistency across all version updates and helps avoid the issues encountered during development.
