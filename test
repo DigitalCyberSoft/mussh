@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Simple test runner script for the project root
+# Usage: ./test [quick|full|performance]
+#
+
+TEST_TYPE="${1:-quick}"
+
+case "$TEST_TYPE" in
+    "quick")
+        echo "Running quick tests..."
+        ./tests/function_tests.sh && ./tests/quick_performance_test.sh
+        ;;
+    "full")
+        echo "Running full test suite..."
+        ./tests/run_all_tests.sh
+        ;;
+    "performance")
+        echo "Running performance benchmarks..."
+        ./tests/performance_test.sh
+        ;;
+    *)
+        echo "Usage: $0 [quick|full|performance]"
+        echo "  quick       - Run function and quick performance tests (default)"
+        echo "  full        - Run complete test suite"
+        echo "  performance - Run extended performance benchmarks"
+        exit 1
+        ;;
+esac

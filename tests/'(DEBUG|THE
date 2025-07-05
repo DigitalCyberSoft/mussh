@@ -1,0 +1,225 @@
+OpenSSH_9.9p1, OpenSSL 3.2.4 11 Feb 2025
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match not found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match not found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug2: resolving "grep" port 22
+ssh: Could not resolve hostname grep: Name or service not known
+OpenSSH_9.9p1, OpenSSL 3.2.4 11 Feb 2025
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match not found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match not found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug2: resolving "host1" port 22
+ssh: Could not resolve hostname host1: Name or service not known
+OpenSSH_9.9p1, OpenSSL 3.2.4 11 Feb 2025
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match not found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match not found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug2: resolving "host2" port 22
+ssh: Could not resolve hostname host2: Name or service not known
+OpenSSH_9.9p1, OpenSSL 3.2.4 11 Feb 2025
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match not found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match not found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug2: resolving "grep" port 22
+ssh: Could not resolve hostname grep: Name or service not known
+OpenSSH_9.9p1, OpenSSL 3.2.4 11 Feb 2025
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match not found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match not found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug2: resolving "host1" port 22
+ssh: Could not resolve hostname host1: Name or service not known
+OpenSSH_9.9p1, OpenSSL 3.2.4 11 Feb 2025
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match not found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match not found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug2: resolving "host2" port 22
+ssh: Could not resolve hostname host2: Name or service not known
+OpenSSH_9.9p1, OpenSSL 3.2.4 11 Feb 2025
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match not found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match not found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host grep originally grep
+debug2: match found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug2: resolving "grep" port 22
+ssh: Could not resolve hostname grep: Name or service not known
+OpenSSH_9.9p1, OpenSSL 3.2.4 11 Feb 2025
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match not found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match not found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host1 originally host1
+debug2: match found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug2: resolving "host1" port 22
+ssh: Could not resolve hostname host1: Name or service not known
+OpenSSH_9.9p1, OpenSSL 3.2.4 11 Feb 2025
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match not found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match not found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 20: Applying options for *
+debug1: Reading configuration data /etc/ssh/ssh_config.d/10-keepalive.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match found
+debug1: Reading configuration data /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+debug1: Reading configuration data /etc/ssh/ssh_config.d/50-redhat.conf
+debug2: checking match for 'final all' host host2 originally host2
+debug2: match found
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug2: resolving "host2" port 22
+ssh: Could not resolve hostname host2: Name or service not known
