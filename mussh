@@ -67,6 +67,8 @@ EXPLICIT_COMMAND=0  # Track if -c or -C was used
 IMPLICIT_COMMAND_FOUND=0  # Track if we found an implicit command
 HASH_KNOWN_HOSTS=''
 VERIFY_HOST_DNS=''
+USE_SCREEN=0  # Track if --screen mode is enabled
+SCREEN_SESSION="mussh-session"  # Default screen session name
 
 ############################
 # GOTTA LOVE DOCUMENTATION #
@@ -78,6 +80,9 @@ Send a command or list of commands to multiple hosts.
 
 OPTIONS:
         --help          This text.
+        --screen        Launch SSH connections in a screen session with
+                        each host in its own window. Session name defaults
+                        to 'mussh-session'. Attach with: screen -r mussh-session
         -d [n]          Verbose debug.  Prints each action, all hosts
                         and commands to be executed to STDERR.  'n' can
                         be from 0 to 2.
@@ -232,13 +237,47 @@ proxy_connect() {
 }
 
 ssh_connect() {
-	echo "$THESCRIPT" \
-	    | ssh -T $SSH_VERBOSE $SSH_ARGS $HOST "$REMOTE_SHELL" 2>&1 \
-	    | while read SSH_LINE ; do
-		if [ "$QUIET" -lt 1 -a "$SSH_LINE" != "" ] ; then
-			echo "$SSH_LINE" | sed -e "s/^/$HOST: /"
+	if [ "$USE_SCREEN" -eq 1 ]; then
+		# Screen mode: create window and send SSH command
+		[ "$DEBUG" -ge 2 ] && echo "DEBUG: Using screen mode for $HOST" 1>&2
+		
+		# Check if screen session exists, create if not
+		if ! screen -list | grep -q "$SCREEN_SESSION"; then
+			[ "$DEBUG" -ge 1 ] && echo "DEBUG: Creating screen session: $SCREEN_SESSION" 1>&2
+			screen -dmS "$SCREEN_SESSION"
 		fi
-	    done
+		
+		# Create new window for this host
+		screen -S "$SCREEN_SESSION" -X screen -t "$HOST"
+		
+		# Build the SSH command with script
+		if [ -n "$THESCRIPT" ]; then
+			# For scripts, we need to send the command that will execute the script
+			FULL_CMD="ssh -T $SSH_VERBOSE $SSH_ARGS $HOST \"$REMOTE_SHELL\" <<'EOF'
+$THESCRIPT
+EOF"
+		else
+			# For interactive sessions
+			FULL_CMD="ssh $SSH_VERBOSE $SSH_ARGS $HOST"
+		fi
+		
+		# Send the command to the screen window
+		screen -S "$SCREEN_SESSION" -p "$HOST" -X stuff "$FULL_CMD$(printf '\015')"
+		
+		# Notify user about the screen session
+		if [ "$QUIET" -lt 1 ]; then
+			echo "$HOST: Started in screen session '$SCREEN_SESSION' (window: $HOST)"
+		fi
+	else
+		# Original SSH mode
+		echo "$THESCRIPT" \
+		    | ssh -T $SSH_VERBOSE $SSH_ARGS $HOST "$REMOTE_SHELL" 2>&1 \
+		    | while read SSH_LINE ; do
+			if [ "$QUIET" -lt 1 -a "$SSH_LINE" != "" ] ; then
+				echo "$SSH_LINE" | sed -e "s/^/$HOST: /"
+			fi
+		    done
+	fi
 }
 
 ##############################
@@ -637,6 +676,11 @@ while [ "$1" != "" ]; do
                 echo "$USAGE"
                 echo "$HELPTEXT"
                 exit 
+                ;;
+          --screen)
+                # Enable screen mode
+                USE_SCREEN=1
+                shift
                 ;;
           -i)
                 # Load the identity file in ssh-agent 
@@ -1072,5 +1116,14 @@ fi
 ############
 # CLEAN UP #
 ############
+# Notify about screen session if used
+if [ "$USE_SCREEN" -eq 1 ] && [ "$QUIET" -lt 1 ]; then
+	echo ""
+	echo "All SSH connections started in screen session: $SCREEN_SESSION"
+	echo "To attach to the session, run: screen -r $SCREEN_SESSION"
+	echo "Use Ctrl-A + window number (0-9) to switch between hosts"
+	echo "Use Ctrl-A + w to see window list"
+fi
+
 destroy_temp
 stop_agent
