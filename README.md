@@ -2,7 +2,9 @@
 
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
-This is an enhanced fork of the original mussh utility created by Dave Fogarty. Mussh is a powerful shell script that allows you to execute commands on multiple hosts in parallel via SSH. Perfect for managing clusters, server farms, or any scenario where you need to run the same command across many machines.
+> **This is an enhanced fork of the original mussh utility from [SourceForge](https://sourceforge.net/projects/mussh/) created by Dave Fogarty.**
+
+Mussh is a powerful shell script that allows you to execute commands on multiple hosts in parallel via SSH. Perfect for managing clusters, server farms, or any scenario where you need to run the same command across many machines.
 
 ## What's New in This Fork
 

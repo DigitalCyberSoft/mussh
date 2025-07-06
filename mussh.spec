@@ -11,14 +11,17 @@ BuildArch:	noarch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Group:		Applications/System
 Source:		%{name}-%{version}.tgz
-URL:		http://www.sourceforge.net/projects/mussh
-Packager:	Dave Fogarty <dave@collegenet.com>
+URL:		https://github.com/DigitalCyberSoft/mussh
+Packager:	Digital Cyber Soft <apps@digitalcybersoft.com>
 
 %description
 Mussh is a shell script that allows you to execute a command or script
 over ssh on multiple hosts with one command. When possible mussh will use
 ssh-agent and RSA/DSA keys to minimize the need to enter your password
 more than once.
+
+This is an enhanced fork of the original mussh utility from SourceForge
+(https://sourceforge.net/projects/mussh/) created by Dave Fogarty.
 
 %prep
 %setup -n mussh-1.2.2
