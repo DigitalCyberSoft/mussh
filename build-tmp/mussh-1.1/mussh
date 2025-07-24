@@ -1,36 +1,11 @@
 #!/usr/bin/env bash
 #
 # $Id: mussh,v 1.12 2006/12/26 21:57:22 doughnut Exp $
-MUSSH_VERSION="1.2.3"
+MUSSH_VERSION="1.1"
 
-# Detect shell and set compatibility options
-if [ -n "$ZSH_VERSION" ]; then
-    # Running in zsh - enable bash compatibility
-    emulate -L bash
-    setopt BASH_REMATCH
-    setopt KSH_ARRAYS
-fi
-
-# Enable safety features (bash/zsh compatible)
+# Enable some Bash safety features
 set -o pipefail  # Fail if any command in a pipe fails
 IFS=$' \t\n'     # Reset IFS to standard value
-
-# Detect operating system for platform-specific features
-case "$(uname -s)" in
-    Darwin*)
-        PLATFORM="macos"
-        # macOS uses different temp directory structure
-        TEMP_BASE="${TMPDIR:-/tmp}"
-        ;;
-    Linux*)
-        PLATFORM="linux"
-        TEMP_BASE=/tmp
-        ;;
-    *)
-        PLATFORM="unix"
-        TEMP_BASE=/tmp
-        ;;
-esac
 #
 # Description:  This script is used to execute the same command(s) on
 #               many hosts.
@@ -52,7 +27,7 @@ PROXY_SSH_ARGS="-o PasswordAuthentication=no"
 SSH_ARGS="-o BatchMode=yes"
 AGENT_LOADED=0
 REMOTE_SHELL='bash'
-# TEMP_BASE is set above based on platform detection
+TEMP_BASE=/tmp
 CONCURRENT=1
 JUMP_HOST=''
 SSH_LOG_FILE=''
@@ -62,16 +37,13 @@ CONTROL_PATH=''
 CONTROL_PERSIST=''
 IDENTITY_AGENT=''
 FORWARD_HOSTPORT=''
-EXPLICIT_HOSTS=0  # Track if -h or -H was used
-EXPLICIT_COMMAND=0  # Track if -c or -C was used
-IMPLICIT_COMMAND_FOUND=0  # Track if we found an implicit command
 HASH_KNOWN_HOSTS=''
 VERIFY_HOST_DNS=''
 
 ############################
 # GOTTA LOVE DOCUMENTATION #
 ############################
-USAGE="Usage: mussh [OPTIONS] <-h host.. | -H hostfile | host..> [-c cmd | -C scriptfile | \"command\"]
+USAGE="Usage: mussh [OPTIONS] <-h host.. | -H hostfile> [-c cmd] [-C scriptfile]
 mussh --help        for full help text"
 HELPTEXT="
 Send a command or list of commands to multiple hosts.
@@ -154,18 +126,10 @@ If neither is specified, commands will be read from standard input.
                         than once.
 
 At least one host is required.  Arguments are in no particular order.
-Hosts can be specified without -h flag as plain arguments.
-Commands with spaces can be specified as a quoted argument (single or double quotes).
 
 EXAMPLES:
 mussh -H ./linuxhosts -C spfiles/testscript.sh
 mussh -c \"cat /etc/hosts\" -h myhost.mydomain.com
-mussh host1.example.com host2.example.com -c \"uptime\"
-mussh server*.example.com -c \"df -h\"
-mussh host1 host2 \"cat /etc/hosts\"
-mussh web1 web2 web3 \"systemctl status nginx\"
-mussh server1 server2 'df -h'
-mussh db1 db2 'mysql -e \"SHOW STATUS\"'
 
 Comments and Bug Reports: doughnut@doughnut.net
 "
@@ -280,13 +244,8 @@ get_next_host() {
 		return 1
 	fi
 	
-	# Read first line more efficiently with bash
-	IFS= read -r NEXT_HOST < "$TEMP_DIR/hostlist"
-	# Count lines more efficiently with bash
-	HOSTFILE_LEN=0
-	while IFS= read -r line; do
-		((HOSTFILE_LEN++))
-	done < "$TEMP_DIR/hostlist"
+	NEXT_HOST=$(head -n 1 "$TEMP_DIR/hostlist")
+	HOSTFILE_LEN=$(wc -l < "$TEMP_DIR/hostlist")
 	
 	if [ -z "$HOSTFILE_LEN" ] || [ "$HOSTFILE_LEN" -eq 0 ]; then
 		[ "$DEBUG" -ge 2 ] && echo "DEBUG[#$CHILDNUM]: Host list is empty." 1>&2
@@ -296,13 +255,9 @@ get_next_host() {
 	
 	[ "$DEBUG" -ge 2 ] && echo "DEBUG[#$CHILDNUM]: Next host: $NEXT_HOST" 1>&2
 
-	# re-write file removing top host more efficiently with bash
+	# re-write file removing top host, using bash arithmetic instead of expr
 	if [ "$HOSTFILE_LEN" -gt 1 ]; then
-		# Skip first line using bash read
-		{
-			IFS= read -r  # skip first line
-			cat  # output remaining lines
-		} < "$TEMP_DIR/hostlist" > "$TEMP_DIR/hostlist.new" || exit 1
+		tail -n $((HOSTFILE_LEN - 1)) "$TEMP_DIR/hostlist" > "$TEMP_DIR/hostlist.new" || exit 1
 		mv "$TEMP_DIR/hostlist.new" "$TEMP_DIR/hostlist"
 	else
 		# If this was the last host, just create an empty file
@@ -385,11 +340,7 @@ shutdown() {
 	
 	# Safely read PIDs with proper quoting
 	if [ -d "$TEMP_DIR" ]; then
-		# Read PIDs more efficiently using bash
-		CPIDS=""
-		for pidfile in "$TEMP_DIR"/*.pid; do
-			[ -f "$pidfile" ] && CPIDS="$CPIDS $(<"$pidfile")"
-		done 2>/dev/null
+		CPIDS=$(cat "$TEMP_DIR"/*.pid 2>/dev/null || echo "")
 		if [ -n "$CPIDS" ]; then
 			for CPID in $CPIDS; do 
 				[ "$DEBUG" -ge 2 ] && echo "DEBUG: Killing pid: $CPID" 1>&2
@@ -424,7 +375,7 @@ spew_hostlist() {
 		if ls "$TEMP_DIR"/*.active >/dev/null 2>&1; then
 			for active_file in "$TEMP_DIR"/*.active; do
 				if [ -f "$active_file" ]; then
-					sed 's/^/    /' "$active_file" 2>/dev/null 1>&2
+					cat "$active_file" 2>/dev/null | sed 's/^/    /'  1>&2
 				fi
 			done
 		else
@@ -433,7 +384,7 @@ spew_hostlist() {
 		
 		echo "HOSTS REMAINING:"  1>&2
 		if [ -f "$TEMP_DIR/hostlist" ]; then
-			sed 's/^/    /' "$TEMP_DIR/hostlist" 2>/dev/null 1>&2
+			cat "$TEMP_DIR/hostlist" 2>/dev/null | sed 's/^/    /'  1>&2
 		else
 			echo "    No hosts remaining" 1>&2
 		fi
@@ -667,7 +618,6 @@ while [ "$1" != "" ]; do
         # HOST ARGS #
         #############
           -h)
-                EXPLICIT_HOSTS=1  # Mark that -h was used
                 # Add support for netgroups with @netgroup format
                 while [ "$2" != "" -a "${2#-?*}" = "$2" ] ; do
                     if [[ "$2" == @* ]]; then
@@ -735,7 +685,6 @@ $HOSTLIST"
                 shift 
                   ;;
           -H)
-                EXPLICIT_HOSTS=1  # Mark that -H was used
                 while [ "$2" != "" -a "${2#-?*}" = "$2" ] ; do
                         HOSTFILE="$2"
                         if [ ! -e "$HOSTFILE" -a "$HOSTFILE" != "-" ] ; then
@@ -757,7 +706,6 @@ $HOSTLIST"
                 shift 
                 ;;
           -n)
-                EXPLICIT_HOSTS=1  # Mark that -n was used
                 # Dedicated netgroup expansion option
                 NETGROUP=$2
                 [ "$DEBUG" -ge 1 ] && echo "DEBUG: Expanding netgroup $NETGROUP" 1>&2
@@ -777,14 +725,12 @@ $HOSTLIST"
         # COMMAND ARGS #
         ################
           -c)
-                EXPLICIT_COMMAND=1  # Mark that -c was used
                 THESCRIPT="$THESCRIPT
 $2"
                 #set "" ; shift
                 shift 2
                 ;;
           -C)
-                EXPLICIT_COMMAND=1  # Mark that -C was used
                 while [ "$2" != "" -a "${2#-?*}" = "$2" ] ; do
                         SCRIPTFILE="$2"
                           if [ ! -e "$SCRIPTFILE" -a "$SCRIPTFILE" != "-" ] ; then
@@ -794,8 +740,7 @@ $2"
                         # More efficient script file processing with redirection
                         if [ "$SCRIPTFILE" = "-" ]; then
                             # Handle stdin special case - read from stdin
-                            # Read from stdin more efficiently
-                            SCRIPT_CONTENT="$(< /dev/stdin)"
+                            SCRIPT_CONTENT="$(cat)"
                         else
                             # Regular file processing - read from file
                             SCRIPT_CONTENT="$(< "$SCRIPTFILE")"
@@ -807,94 +752,9 @@ $SCRIPT_CONTENT"
                 shift
                 ;;
           *)
-                # If it doesn't start with a dash, treat it as a host
-                if [[ "$1" != -* ]]; then
-                    # Only allow implicit hosts if no explicit -h or -H was used
-                    if [ $EXPLICIT_HOSTS -eq 1 ]; then
-                        echo "mussh: invalid argument - \"$1\"" 1>&2
-                        echo "       Cannot mix implicit hosts with -h or -H options" 1>&2
-                        echo "$USAGE" 1>&2
-                        exit 1
-                    fi
-                    # Handle wildcards and netgroups just like -h option
-                    if [[ "$1" == @* ]]; then
-                        # This is a netgroup, expand it
-                        NETGROUP="${1#@}"
-                        [ "$DEBUG" -ge 1 ] && echo "DEBUG: Expanding netgroup $NETGROUP" 1>&2
-                        NETGROUP_HOSTS=$(getent netgroup "$NETGROUP" 2>/dev/null | sed -e 's/^[^(]*(//' -e 's/)$//' -e 's/([^,]*,\([^,]*\),[^)]*)/\1/g')
-                        if [ -n "$NETGROUP_HOSTS" ]; then
-                            for NETGROUP_HOST in $NETGROUP_HOSTS; do
-                                HOSTLIST="$NETGROUP_HOST
-$HOSTLIST"
-                            done
-                        else
-                            echo "WARNING: Netgroup $NETGROUP not found or empty" 1>&2
-                        fi
-                    elif [[ "$1" == *\** || "$1" == *\?* ]]; then
-                        # This is a wildcard pattern, expand it
-                        [ "$DEBUG" -ge 1 ] && echo "DEBUG: Expanding wildcard pattern $1" 1>&2
-                        
-                        EXPANDED_HOSTS=""
-                        
-                        # Check known_hosts file
-                        if [ -f ~/.ssh/known_hosts ]; then
-                            KNOWN_HOSTS=$(cut -d ' ' -f 1 ~/.ssh/known_hosts 2>/dev/null | cut -d ',' -f 1 | grep -v '^|' | sed 's/\[//g;s/\]:[0-9]*//g')
-                            for h in $KNOWN_HOSTS; do
-                                if [[ $h == $1 ]]; then
-                                    EXPANDED_HOSTS="$EXPANDED_HOSTS $h"
-                                fi
-                            done
-                        fi
-                        
-                        # Check ssh config file
-                        if [ -f ~/.ssh/config ]; then
-                            CONFIG_HOSTS=$(grep -i "^Host " ~/.ssh/config 2>/dev/null | awk '{print $2}' | grep -v "[*?]")
-                            for h in $CONFIG_HOSTS; do
-                                if [[ $h == $1 ]]; then
-                                    EXPANDED_HOSTS="$EXPANDED_HOSTS $h"
-                                fi
-                            done
-                        fi
-                        
-                        if [ -n "$EXPANDED_HOSTS" ]; then
-                            [ "$DEBUG" -ge 1 ] && echo "DEBUG: Expanded to: $EXPANDED_HOSTS" 1>&2
-                            for h in $EXPANDED_HOSTS; do
-                                HOSTLIST="$h
-$HOSTLIST"
-                            done
-                        else
-                            echo "WARNING: No hosts found matching pattern $1" 1>&2
-                        fi
-                    else
-                        # Check if this argument should be treated as a command
-                        # Commands are detected by: spaces, or if no command found yet and this doesn't look like a hostname
-                        if [[ "$1" == *" "* ]] || ([[ $IMPLICIT_COMMAND_FOUND -eq 0 ]] && [[ "$1" != *.* ]] && [[ "$1" != *@* ]] && [[ "$1" != localhost ]]); then
-                            # This looks like a command, not a host
-                            if [ $EXPLICIT_COMMAND -eq 1 ]; then
-                                echo "mussh: Cannot mix implicit command with -c or -C options" 1>&2
-                                echo "$USAGE" 1>&2
-                                exit 1
-                            fi
-                            if [ $IMPLICIT_COMMAND_FOUND -eq 1 ]; then
-                                echo "mussh: Only one implicit command allowed" 1>&2
-                                echo "$USAGE" 1>&2
-                                exit 1
-                            fi
-                            IMPLICIT_COMMAND_FOUND=1
-                            THESCRIPT="$THESCRIPT
-$1"
-                        else
-                            # Regular host (no spaces)
-                            HOSTLIST="$1
-$HOSTLIST"
-                        fi
-                    fi
-                    shift
-                else
-                    echo "mussh: invalid command - \"$1\"" 1>&2
-                    echo "$USAGE" 1>&2
-                    exit 1
-                fi
+                echo "mussh: invalid command - \"$1\"" 1>&2
+                echo "$USAGE" 1>&2
+                exit 1
                 ;;
         esac
 done
@@ -948,9 +808,7 @@ fi
 ###################################################
 # INFINITE CONCURRENCY IS REALLY JUST ALL AT ONCE #
 ###################################################
-# Count hosts more efficiently with bash parameter expansion
-set -- $HOSTLIST
-COUNT_HOSTS=$#
+COUNT_HOSTS=$(echo "$HOSTLIST" | wc -w)
 if [ $CONCURRENT -eq 0 ] || [ $CONCURRENT -gt $COUNT_HOSTS ] ; then
        CONCURRENT=$COUNT_HOSTS
        [ "$DEBUG" -ge 1 ] && echo "DEBUG: setting concurrency (-m) to $CONCURRENT (all hosts)" 1>&2
@@ -1054,16 +912,13 @@ else
 	while [ "$RETVAL" -gt 128 ] ; do
 		[ "$DEBUG" -ge 2 ] && echo "DEBUG: wait returned with a value of $RETVAL" 1>&2
 		DO_WAIT=0
-		# Read PIDs more efficiently
-		for pidfile in "$TEMP_DIR"/*.pid; do
-			[ -f "$pidfile" ] || continue
-			CPID=$(<"$pidfile")
+		for CPID in $(cat "$TEMP_DIR"/*.pid 2>/dev/null) ; do
 			# More portable process checking that works on Linux, macOS, BSD, etc.
 			if kill -0 "$CPID" 2>/dev/null ; then 
 				DO_WAIT=1
 				[ "$DEBUG" -ge 2 ] && echo "DEBUG: $CPID is still running." 1>&2
 			fi
-		done 2>/dev/null
+		done
 		[ "$DO_WAIT" = 0 ] && break
 		wait
 		RETVAL=$?

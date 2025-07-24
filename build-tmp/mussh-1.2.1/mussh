@@ -1,36 +1,11 @@
 #!/usr/bin/env bash
 #
 # $Id: mussh,v 1.12 2006/12/26 21:57:22 doughnut Exp $
-MUSSH_VERSION="1.2.3"
+MUSSH_VERSION="1.2.1"
 
-# Detect shell and set compatibility options
-if [ -n "$ZSH_VERSION" ]; then
-    # Running in zsh - enable bash compatibility
-    emulate -L bash
-    setopt BASH_REMATCH
-    setopt KSH_ARRAYS
-fi
-
-# Enable safety features (bash/zsh compatible)
+# Enable some Bash safety features
 set -o pipefail  # Fail if any command in a pipe fails
 IFS=$' \t\n'     # Reset IFS to standard value
-
-# Detect operating system for platform-specific features
-case "$(uname -s)" in
-    Darwin*)
-        PLATFORM="macos"
-        # macOS uses different temp directory structure
-        TEMP_BASE="${TMPDIR:-/tmp}"
-        ;;
-    Linux*)
-        PLATFORM="linux"
-        TEMP_BASE=/tmp
-        ;;
-    *)
-        PLATFORM="unix"
-        TEMP_BASE=/tmp
-        ;;
-esac
 #
 # Description:  This script is used to execute the same command(s) on
 #               many hosts.
@@ -52,7 +27,7 @@ PROXY_SSH_ARGS="-o PasswordAuthentication=no"
 SSH_ARGS="-o BatchMode=yes"
 AGENT_LOADED=0
 REMOTE_SHELL='bash'
-# TEMP_BASE is set above based on platform detection
+TEMP_BASE=/tmp
 CONCURRENT=1
 JUMP_HOST=''
 SSH_LOG_FILE=''
@@ -866,9 +841,8 @@ $HOSTLIST"
                             echo "WARNING: No hosts found matching pattern $1" 1>&2
                         fi
                     else
-                        # Check if this argument should be treated as a command
-                        # Commands are detected by: spaces, or if no command found yet and this doesn't look like a hostname
-                        if [[ "$1" == *" "* ]] || ([[ $IMPLICIT_COMMAND_FOUND -eq 0 ]] && [[ "$1" != *.* ]] && [[ "$1" != *@* ]] && [[ "$1" != localhost ]]); then
+                        # Check if this argument contains spaces - if so, treat as command
+                        if [[ "$1" == *" "* ]]; then
                             # This looks like a command, not a host
                             if [ $EXPLICIT_COMMAND -eq 1 ]; then
                                 echo "mussh: Cannot mix implicit command with -c or -C options" 1>&2

@@ -1,37 +1,4 @@
 $Id: CHANGES,v 1.7 2006/12/26 21:57:22 doughnut Exp $
-v1.2.3
-2025-07-24
-	- Enhanced argument parsing to support quoted single-word commands
-	- Fixed issue where single-word commands like "pwd" required spaces to be recognized as commands
-	- Improved command detection logic to handle commands without spaces when quoted
-	- Single-word commands are now properly detected based on hostname pattern matching
-
-v1.2.2
-2025-07-06
-	- Added zsh shell compatibility with automatic bash emulation
-	- Added macOS platform support with proper path detection  
-	- Created automated setup.sh installer with sudo handling and platform detection
-	- Added Homebrew formula (mussh.rb) for macOS users
-	- Added comprehensive shell compatibility test suite (test_shell_compatibility.sh)
-	- Updated documentation with multiple installation methods (setup script, Homebrew, packages)
-	- Fixed bug reporting URL to point to GitHub issues instead of SourceForge
-	- Enhanced cross-platform support for Linux, macOS, and Unix systems
-	- Documented repository structure in CLAUDE.md for better development workflow
-
-v1.2.1
-2025-07-05
-	- Added implicit host arguments support: mussh host1 host2 -c "command"
-	- Added implicit command arguments support: mussh host1 host2 "command"
-	- Commands with spaces are automatically detected and treated as implicit commands
-	- Added safety checks to prevent mixing implicit and explicit argument styles
-	- Cannot mix -h/-H/-n with implicit hosts
-	- Cannot mix -c/-C with implicit commands
-	- Only one implicit command allowed per invocation
-	- Updated help text and documentation with new usage examples
-	- Added comprehensive test suite for new features (test_implicit_features.sh)
-	- Supports both single and double quoted commands
-	- Maintains full backward compatibility with existing syntax
-
 v1.2
 2025-03-26
 	- Major performance optimizations delivering 97-99% speed improvements:

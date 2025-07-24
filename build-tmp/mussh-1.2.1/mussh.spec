@@ -4,7 +4,7 @@
 #
 Summary:	MUltihost SSH
 Name:		mussh
-Version:	1.2.3
+Version:	1.2.1
 Release:	1
 License:	GPL
 BuildArch:	noarch
@@ -21,13 +21,13 @@ ssh-agent and RSA/DSA keys to minimize the need to enter your password
 more than once.
 
 %prep
-%setup -n mussh-1.2.3
-
-%install
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/bin/
 mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1/
 mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/bash_completion.d/
+%setup -n mussh-1.2.1
+
+%install
 install mussh $RPM_BUILD_ROOT/usr/bin/
 gzip mussh.1
 install mussh.1.gz ${RPM_BUILD_ROOT}%{_mandir}/man1/
@@ -35,26 +35,12 @@ install -m 644 mussh-completion.bash ${RPM_BUILD_ROOT}%{_sysconfdir}/bash_comple
 
 %files
 %defattr(-, root, root)
-%doc INSTALL README.md BUGS CHANGES EXAMPLES
+%doc INSTALL README BUGS CHANGES EXAMPLES
 /usr/bin/mussh
 %{_mandir}/man1/*
 %{_sysconfdir}/bash_completion.d/mussh
 
 %changelog
-* Thu Jul 24 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.3-1
-- Enhanced argument parsing to support quoted single-word commands
-- Fixed issue where single-word commands like "pwd" required spaces to be recognized
-- Improved command detection logic for better user experience
-
-* Sat Jul 06 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.2-1
-- Added zsh shell compatibility with automatic bash emulation
-- Added macOS platform support with proper path detection
-- Created automated setup.sh installer with sudo handling
-- Added Homebrew formula for macOS users
-- Added comprehensive shell compatibility test suite
-- Updated documentation with multiple installation methods
-- Fixed bug reporting URL to point to GitHub issues
-
 * Sat Jul 05 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.1-1
 - Added implicit host arguments support (mussh host1 host2 -c "command")
 - Added implicit command arguments support (mussh host1 host2 "command")

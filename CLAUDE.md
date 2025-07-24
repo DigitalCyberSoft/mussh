@@ -304,4 +304,19 @@ dpkg -I mussh_1.X-2_all.deb
 
 **Note**: The DEB version number will be incremented by alien (e.g., 1.X becomes 1.X-2).
 
+### Installation Methods
+
+The project now supports multiple installation methods:
+
+1. **setup.sh script**: Automated installer with platform detection and sudo handling
+2. **Homebrew formula**: `mussh.rb` for macOS users
+3. **Package managers**: RPM and DEB packages
+4. **Manual installation**: Traditional copy method
+
+When updating for new versions, ensure:
+- Update version in `setup.sh` references
+- Update Homebrew formula URL and SHA256
+- Test installation on both Linux and macOS
+- Verify zsh compatibility
+
 This systematic approach ensures consistency across all version updates and helps avoid the issues encountered during development.

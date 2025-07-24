@@ -8,10 +8,6 @@ This is an enhanced fork of the original mussh utility created by Dave Fogarty. 
 
 This fork adds several modern features to the original mussh utility:
 
-- **Implicit arguments**: `mussh host1 host2 "command"` - no need for `-h` or `-c` flags
-- **zsh compatibility**: Full support for zsh shell with automatic bash emulation
-- **macOS support**: Native compatibility with macOS and Homebrew installation
-- **Easy installation**: Automated setup script with sudo handling
 - Support for SSH jump hosts via `-J` option (OpenSSH 7.3+)
 - Connection sharing with SSH ControlMaster/ControlPath/ControlPersist
 - Wildcard pattern matching for host selection (`mussh -h "server*"`)
@@ -45,74 +41,29 @@ The latest version includes significant performance optimizations:
 
 ## Installation
 
-### Easy Installation (Recommended)
+### From RPM (Fedora/RHEL/CentOS)
 
-```bash
-# Clone the repository
-git clone https://github.com/DigitalCyberSoft/mussh.git
-cd mussh
-
-# Run the automated installer
-./setup.sh
-```
-
-The installer will:
-- Detect your platform (Linux/macOS)
-- Install to appropriate system directories
-- Set up bash completion
-- Install man pages
-- Handle sudo permissions automatically
-
-### Homebrew (macOS)
-
-```bash
-# Install via Homebrew (using the included formula)
-brew install --build-from-source mussh.rb
-
-# Or tap and install from a custom repository
-# (if published to a tap in the future)
-```
-
-### Package Managers
-
-#### RPM (Fedora/RHEL/CentOS)
 ```bash
 # Install from the RPM
-sudo rpm -ivh mussh-1.2.1-1.noarch.rpm
+sudo rpm -ivh mussh-1.1-1.noarch.rpm
 ```
 
-#### DEB (Debian/Ubuntu)
-```bash
-# Install from the DEB package
-sudo dpkg -i mussh_1.2.1-2_all.deb
-```
-
-### Manual Installation
+### From Source
 
 ```bash
 # Clone the repository
 git clone https://github.com/DigitalCyberSoft/mussh.git
 cd mussh
 
-# Linux installation
+# Install manually
 sudo cp mussh /usr/bin/
 sudo cp mussh.1 /usr/share/man/man1/
+sudo gzip /usr/share/man/man1/mussh.1
 sudo cp mussh-completion.bash /etc/bash_completion.d/mussh
 
-# macOS installation
-sudo cp mussh /usr/local/bin/
-sudo cp mussh.1 /usr/local/share/man/man1/
-sudo cp mussh-completion.bash /usr/local/etc/bash_completion.d/mussh
-
-# Make executable
-sudo chmod +x /usr/bin/mussh  # or /usr/local/bin/mussh on macOS
+# Activate bash completion for current session
+source /etc/bash_completion.d/mussh
 ```
-
-### Shell Compatibility
-
-mussh works with both bash and zsh:
-- **bash**: Native support
-- **zsh**: Automatic bash compatibility mode enabled
 
 ## Quick Start
 
