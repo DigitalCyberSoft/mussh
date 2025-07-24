@@ -47,7 +47,25 @@ The latest version includes significant performance optimizations:
 
 ## Installation
 
-### Easy Installation (Recommended)
+### One-Line Install (Recommended)
+
+```bash
+# Install or update to latest version
+curl -fsSL https://raw.githubusercontent.com/DigitalCyberSoft/mussh/main/install.sh | bash
+
+# Uninstall completely
+curl -fsSL https://raw.githubusercontent.com/DigitalCyberSoft/mussh/main/install.sh | bash -s -- --uninstall
+```
+
+**Features of the one-line installer:**
+- ✅ **Smart installation**: Automatically detects if update is needed
+- ✅ **User vs system install**: Works with or without sudo
+- ✅ **Platform detection**: Supports Linux and macOS
+- ✅ **PATH management**: Automatically adds ~/.local/bin to PATH for user installs
+- ✅ **Clean uninstall**: Removes all files completely
+- ✅ **No dependencies**: Only requires curl and bash
+
+### Alternative: Setup Script
 
 ```bash
 # Clone the repository
@@ -57,13 +75,6 @@ cd mussh
 # Run the automated installer
 ./setup.sh
 ```
-
-The installer will:
-- Detect your platform (Linux/macOS)
-- Install to appropriate system directories
-- Set up bash completion
-- Install man pages
-- Handle sudo permissions automatically
 
 ### Homebrew (macOS)
 
