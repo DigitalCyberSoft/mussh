@@ -4,7 +4,7 @@
 #
 Summary:	MUltihost SSH
 Name:		mussh
-Version:	1.2.3
+Version:	1.2.4
 Release:	1
 License:	GPL
 BuildArch:	noarch
@@ -24,7 +24,7 @@ This is an enhanced fork of the original mussh utility from SourceForge
 (https://sourceforge.net/projects/mussh/) created by Dave Fogarty.
 
 %prep
-%setup -n mussh-1.2.3
+%setup -n mussh-1.2.4
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -44,6 +44,11 @@ install -m 644 mussh-completion.bash ${RPM_BUILD_ROOT}%{_sysconfdir}/bash_comple
 %{_sysconfdir}/bash_completion.d/mussh
 
 %changelog
+* Thu Jul 24 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.4-1
+- Enhanced argument parsing to support quoted single-word commands
+- Fixed issue where single-word commands like "pwd" required spaces to be recognized
+- Improved command detection logic for better user experience with quoted commands
+
 * Sun Jul 06 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.3-1
 - Added --screen option to launch SSH connections in screen sessions
 - Each host gets its own named window within a single screen session

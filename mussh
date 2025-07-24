@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # $Id: mussh,v 1.12 2006/12/26 21:57:22 doughnut Exp $
-MUSSH_VERSION="1.2.3"
+MUSSH_VERSION="1.2.4"
 
 # Detect shell and set compatibility options
 if [ -n "$ZSH_VERSION" ]; then
@@ -1211,8 +1211,9 @@ $HOSTLIST"
                             echo "WARNING: No hosts found matching pattern $1" 1>&2
                         fi
                     else
-                        # Check if this argument contains spaces - if so, treat as command
-                        if [[ "$1" == *" "* ]]; then
+                        # Check if this argument should be treated as a command
+                        # Commands are detected by: spaces, or if no command found yet and this doesn't look like a hostname
+                        if [[ "$1" == *" "* ]] || ([[ $IMPLICIT_COMMAND_FOUND -eq 0 ]] && [[ "$1" != *.* ]] && [[ "$1" != *@* ]] && [[ "$1" != localhost ]]); then
                             # This looks like a command, not a host
                             if [ $EXPLICIT_COMMAND -eq 1 ]; then
                                 echo "mussh: Cannot mix implicit command with -c or -C options" 1>&2
