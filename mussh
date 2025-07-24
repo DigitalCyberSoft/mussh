@@ -70,6 +70,10 @@ VERIFY_HOST_DNS=''
 USE_SCREEN=0  # Track if --screen mode is enabled
 SCREEN_SESSION="mussh-session"  # Default screen session name
 
+# Security settings
+SECURITY_MODE="strict"  # strict, normal, unsafe
+FORCE_UNSAFE=0
+
 ############################
 # GOTTA LOVE DOCUMENTATION #
 ############################
@@ -125,6 +129,12 @@ OPTIONS:
         -T <socket>     Specifies the UNIX-domain socket used to communicate with
                         the authentication agent.
                         (requires openssh 7.3 or newer)
+
+SECURITY OPTIONS:
+        --security-strict    Strict security mode (default). Reject dangerous input.
+        --security-normal    Normal security mode. Warn about dangerous patterns.
+        --force-unsafe       Disable security checks completely (DANGEROUS!).
+                           Use only when you know what you're doing.
         -HKH            Enable HashKnownHosts for better security.
                         (requires openssh 4.0 or newer)
         -VHD            Enable verification of host keys via DNS (VerifyHostKeyDNS=yes).
@@ -175,6 +185,233 @@ mussh db1 db2 'mysql -e \"SHOW STATUS\"'
 Comments and Bug Reports: doughnut@doughnut.net
 "
 
+#############################
+# SECURITY VALIDATION FUNCTIONS #
+#############################
+
+# Log security events
+security_log() {
+    local level="$1"
+    local message="$2"
+    
+    if [[ "$level" == "ERROR" || "$level" == "WARNING" ]]; then
+        echo "$level: $message" >&2
+        # Log to syslog if available
+        logger -t mussh "$level: $message" 2>/dev/null || true
+    fi
+}
+
+# Display security error with guidance
+security_error() {
+    local issue="$1"
+    local value="$2"
+    
+    echo "SECURITY ERROR: $issue" >&2
+    echo "  Rejected value: $value" >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  1. Fix the input (recommended)" >&2
+    echo "  2. Use --force-unsafe flag to override (dangerous)" >&2
+    echo "" >&2
+    echo "Example: mussh --force-unsafe -h '$value' ..." >&2
+    exit 1
+}
+
+# Validate hostname format and safety
+validate_hostname() {
+    local hostname="$1"
+    
+    # Check for empty hostname
+    if [[ -z "$hostname" ]]; then
+        security_error "Empty hostname provided" "$hostname"
+        return 1
+    fi
+    
+    # Check length (RFC limit is 253 characters)
+    if [[ ${#hostname} -gt 253 ]]; then
+        if [[ $FORCE_UNSAFE -eq 0 ]]; then
+            security_error "Hostname too long (max 253 chars)" "$hostname"
+            return 1
+        else
+            security_log "WARNING" "Using long hostname: ${hostname:0:50}..."
+        fi
+    fi
+    
+    # Check for shell metacharacters that could cause injection
+    if [[ "$hostname" == *";"* ]] || [[ "$hostname" == *"|"* ]] || [[ "$hostname" == *"&"* ]] || [[ "$hostname" == *"\`"* ]] || [[ "$hostname" == *"$"* ]] || [[ "$hostname" == *"("* ]] || [[ "$hostname" == *")"* ]]; then
+        case "$SECURITY_MODE" in
+            strict)
+                security_error "Hostname contains dangerous shell characters" "$hostname"
+                return 1
+                ;;
+            normal)
+                security_log "WARNING" "Hostname contains shell metacharacters: $hostname"
+                ;;
+            unsafe)
+                security_log "WARNING" "Security disabled - using hostname with shell chars: $hostname"
+                ;;
+        esac
+    fi
+    
+    # Basic hostname format validation (allows user@host format)
+    if [[ ! "$hostname" =~ ^[a-zA-Z0-9._-]+(@[a-zA-Z0-9._-]+)?$ ]] && [[ "$SECURITY_MODE" == "strict" ]]; then
+        # Allow some flexibility in normal/unsafe modes
+        if [[ "$hostname" =~ [^a-zA-Z0-9._@:-] ]] && [[ $FORCE_UNSAFE -eq 0 ]]; then
+            security_error "Hostname contains invalid characters" "$hostname"
+            return 1
+        fi
+    fi
+    
+    return 0
+}
+
+# Validate SSH options against whitelist
+validate_ssh_option() {
+    local option="$1"
+    
+    # Whitelist of allowed SSH options
+    case "$option" in
+        BatchMode=yes|BatchMode=no) return 0 ;;
+        ConnectTimeout=[0-9]*) return 0 ;;
+        PasswordAuthentication=yes|PasswordAuthentication=no) return 0 ;;
+        PubkeyAuthentication=yes|PubkeyAuthentication=no) return 0 ;;
+        StrictHostKeyChecking=yes|StrictHostKeyChecking=no|StrictHostKeyChecking=ask) return 0 ;;
+        UserKnownHostsFile=*) return 0 ;;
+        IdentityFile=*) return 0 ;;
+        Port=[0-9]*) 
+            # Validate port range
+            local port="${option#Port=}"
+            if [[ $port -lt 1 || $port -gt 65535 ]]; then
+                security_error "Invalid port number" "$port"
+                return 1
+            fi
+            return 0 ;;
+        ForwardAgent=yes|ForwardAgent=no) return 0 ;;
+        ControlMaster=yes|ControlMaster=no|ControlMaster=auto) return 0 ;;
+        ControlPath=*) return 0 ;;
+        ControlPersist=yes|ControlPersist=no|ControlPersist=[0-9]*) return 0 ;;
+        ProxyJump=*) 
+            # Validate the jump host format
+            local jump_host="${option#ProxyJump=}"
+            validate_hostname "$jump_host" || return 1
+            return 0 ;;
+        LogLevel=QUIET|LogLevel=FATAL|LogLevel=ERROR|LogLevel=INFO|LogLevel=VERBOSE|LogLevel=DEBUG*) return 0 ;;
+        Compression=yes|Compression=no) return 0 ;;
+        ServerAliveInterval=[0-9]*) return 0 ;;
+        ServerAliveCountMax=[0-9]*) return 0 ;;
+        *) 
+            case "$SECURITY_MODE" in
+                strict)
+                    security_error "SSH option not in whitelist" "$option"
+                    return 1
+                    ;;
+                normal)
+                    security_log "WARNING" "Non-whitelisted SSH option: $option"
+                    return 0
+                    ;;
+                unsafe)
+                    security_log "WARNING" "Security disabled - using SSH option: $option"
+                    return 0
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+# Validate and sanitize commands
+validate_command() {
+    local command="$1"
+    
+    # Check for extremely dangerous patterns
+    case "$SECURITY_MODE" in
+        strict)
+            if [[ "$command" =~ (^|[[:space:];|&])(rm[[:space:]]+-[rf]|sudo[[:space:]]+rm|mkfs|dd[[:space:]]+if=|>.*passwd|chmod[[:space:]]+777) ]]; then
+                security_error "Command contains dangerous destructive patterns" "$command"
+                return 1
+            fi
+            ;;
+        normal)
+            if [[ "$command" =~ (^|[[:space:];|&])(rm[[:space:]]+-[rf]|sudo[[:space:]]+rm|mkfs|dd[[:space:]]+if=) ]]; then
+                security_log "WARNING" "Command contains potentially destructive patterns: $command"
+            fi
+            ;;
+        unsafe)
+            security_log "WARNING" "Security disabled - executing command: ${command:0:50}..."
+            ;;
+    esac
+    
+    return 0
+}
+
+# Safely start SSH agent without eval
+safe_ssh_agent_start() {
+    local agent_output
+    local auth_sock
+    local agent_pid
+    
+    [ "$DEBUG" -ge 1 ] && echo "DEBUG: Starting SSH Agent securely" 1>&2
+    
+    # Get ssh-agent output safely
+    agent_output=$(ssh-agent -s 2>/dev/null) || {
+        echo "ERROR: Failed to start ssh-agent" >&2
+        return 1
+    }
+    
+    # Parse output safely using regex instead of eval
+    if [[ "$agent_output" =~ SSH_AUTH_SOCK=([^;[:space:]]+) ]]; then
+        auth_sock="${BASH_REMATCH[1]}"
+    else
+        echo "ERROR: Could not parse SSH_AUTH_SOCK from ssh-agent" >&2
+        return 1
+    fi
+    
+    if [[ "$agent_output" =~ SSH_AGENT_PID=([^;[:space:]]+) ]]; then
+        agent_pid="${BASH_REMATCH[1]}"
+    else
+        echo "ERROR: Could not parse SSH_AGENT_PID from ssh-agent" >&2
+        return 1
+    fi
+    
+    # Validate that the socket exists and is owned by us
+    if [[ ! -S "$auth_sock" ]]; then
+        echo "ERROR: SSH agent socket not found: $auth_sock" >&2
+        return 1
+    fi
+    
+    # Check socket ownership if possible (Linux/macOS)
+    if command -v stat >/dev/null 2>&1; then
+        local socket_owner
+        socket_owner=$(stat -c %U "$auth_sock" 2>/dev/null || stat -f %Su "$auth_sock" 2>/dev/null)
+        if [[ -n "$socket_owner" && "$socket_owner" != "$(whoami)" ]]; then
+            echo "ERROR: SSH agent socket not owned by current user" >&2
+            return 1
+        fi
+    fi
+    
+    export SSH_AUTH_SOCK="$auth_sock"
+    export SSH_AGENT_PID="$agent_pid"
+    
+    return 0
+}
+
+# Create secure temporary directory
+create_secure_temp() {
+    # Use mktemp for secure temporary directory creation
+    TEMP_DIR=$(mktemp -d -t mussh.XXXXXXXXXX) || {
+        echo "ERROR: Failed to create secure temporary directory" >&2
+        exit 1
+    }
+    
+    # Set restrictive permissions
+    chmod 700 "$TEMP_DIR" || {
+        echo "ERROR: Failed to set temporary directory permissions" >&2
+        rm -rf "$TEMP_DIR"
+        exit 1
+    }
+    
+    [ "$DEBUG" -ge 1 ] && echo "DEBUG: Created secure temp dir: $TEMP_DIR" 1>&2
+}
+
 ###########################
 # FUNCTIONS FOR SSH-AGENT #
 ###########################
@@ -193,7 +430,10 @@ start_agent() {
                 [ "$DEBUG" -ge 1 ] && echo "DEBUG: SSH Agent already loaded" 1>&2
                 return
         fi
-        eval $(ssh-agent -s) >/dev/null
+        safe_ssh_agent_start >/dev/null || {
+            echo "ERROR: Failed to start SSH agent securely" >&2
+            exit 1
+        }
         AGENT_LOADED=1
 }
 stop_agent() {
@@ -204,7 +444,11 @@ stop_agent() {
         fi
         [ "$AGENT_LOADED" = "0" ] && return
         [ "$DEBUG" -ge 1 ] && echo "DEBUG: Stopping Agent" 1>&2
-	eval $(ssh-agent -s -k) >/dev/null
+        # Safely kill SSH agent
+        if [ -n "$SSH_AGENT_PID" ]; then
+            kill "$SSH_AGENT_PID" 2>/dev/null || true
+            unset SSH_AGENT_PID SSH_AUTH_SOCK
+        fi
 }
 
 ####################################
@@ -391,27 +635,28 @@ run_child() {
 # FUNCTIONS FOR TEMP DIRS #
 ###########################
 create_temp() {
-	MKTEMP=$(which mktemp 2>/dev/null)
-	if [ -x "$MKTEMP" ] ; then
-        	[ "$DEBUG" -ge 2 ] && echo "DEBUG: using mktemp ($MKTEMP)." 1>&2
-		TEMP_DIR=$(mktemp -d $TEMP_BASE/$(basename $0).XXXXXX) || exit 1
-	else
-        	[ "$DEBUG" -ge 2 ] && echo "DEBUG: can't find mktemp... using alternate." 1>&2
-        	TEMP_DIR="$TEMP_BASE/$(basename $0).$(date +%s)"
-        	[ "$DEBUG" -ge 2 ] && echo "DEBUG: Creating temp dir ($TEMP_DIR)." 1>&2
-		if [ -e "$TEMP_DIR" ] ; then
-			echo "$0: Temp dir \"$TEMP_DIR\" already exists!" 1>&2
-			exit 1
-		fi
-		mkdir -m 700 $TEMP_DIR
-	fi
+    # Use the secure temp creation function defined above
+    [ "$DEBUG" -ge 2 ] && echo "DEBUG: Creating secure temp directory." 1>&2
+    create_secure_temp
 }
 
 destroy_temp() {
-	if [ -d "$TEMP_DIR" ] ; then
-        	[ "$DEBUG" -ge 2 ] && echo "DEBUG: Removing temp dir ($TEMP_DIR)." 1>&2
-		rm -rf "$TEMP_DIR" 2>/dev/null
-	fi
+    if [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR" ]; then
+        [ "$DEBUG" -ge 2 ] && echo "DEBUG: Securely removing temp dir ($TEMP_DIR)." 1>&2
+        
+        # Securely overwrite sensitive files if shred is available
+        if command -v shred >/dev/null 2>&1; then
+            find "$TEMP_DIR" -type f -exec shred -n 1 {} \; 2>/dev/null || true
+        fi
+        
+        # Remove the directory
+        rm -rf "$TEMP_DIR" || {
+            echo "WARNING: Failed to remove temporary directory: $TEMP_DIR" >&2
+        }
+        
+        # Clear the variable
+        unset TEMP_DIR
+    fi
 }
 
 
@@ -538,7 +783,12 @@ while [ "$1" != "" ]; do
                 shift
                 ;;
           -o)
-                SSH_ARGS="$SSH_ARGS -o $2"
+                if validate_ssh_option "$2"; then
+                    SSH_ARGS="$SSH_ARGS -o $(printf '%q' "$2")"
+                else
+                    # validate_ssh_option already shows error message
+                    exit 1
+                fi
                 shift 2
                 ;;
           -u)
@@ -682,6 +932,25 @@ while [ "$1" != "" ]; do
                 USE_SCREEN=1
                 shift
                 ;;
+          --security-strict)
+                # Strict security mode (default)
+                SECURITY_MODE="strict"
+                FORCE_UNSAFE=0
+                shift
+                ;;
+          --security-normal)
+                # Normal security mode with warnings
+                SECURITY_MODE="normal"
+                FORCE_UNSAFE=0
+                shift
+                ;;
+          --force-unsafe)
+                # Disable security checks (dangerous)
+                SECURITY_MODE="unsafe"
+                FORCE_UNSAFE=1
+                echo "WARNING: Security checks disabled! Use with extreme caution." >&2
+                shift
+                ;;
           -i)
                 # Load the identity file in ssh-agent 
                   while [ "$2" != "" -a "${2#-}" = "$2" ] ; do
@@ -699,12 +968,22 @@ while [ "$1" != "" ]; do
                 shift 2
                   ;;
           -po)
-                PROXY_SSH_ARGS="$PROXY_SSH_ARGS -o $2"
+                if validate_ssh_option "$2"; then
+                    PROXY_SSH_ARGS="$PROXY_SSH_ARGS -o $(printf '%q' "$2")"
+                else
+                    # validate_ssh_option already shows error message
+                    exit 1
+                fi
                 shift 2
                   ;;
           -J)
-                JUMP_HOST=$2
-                SSH_ARGS="$SSH_ARGS -o ProxyJump=$JUMP_HOST"
+                if validate_hostname "$2"; then
+                    JUMP_HOST=$2
+                    SSH_ARGS="$SSH_ARGS -o ProxyJump=$(printf '%q' "$JUMP_HOST")"
+                else
+                    # validate_hostname already shows error message
+                    exit 1
+                fi
                 shift 2
                   ;;
         #############
@@ -722,8 +1001,12 @@ while [ "$1" != "" ]; do
                         NETGROUP_HOSTS=$(getent netgroup "$NETGROUP" 2>/dev/null | sed -e 's/^[^(]*(//' -e 's/)$//' -e 's/([^,]*,\([^,]*\),[^)]*)/\1/g')
                         if [ -n "$NETGROUP_HOSTS" ]; then
                             for NETGROUP_HOST in $NETGROUP_HOSTS; do
-                                HOSTLIST="$NETGROUP_HOST
+                                if validate_hostname "$NETGROUP_HOST"; then
+                                    HOSTLIST="$NETGROUP_HOST
 $HOSTLIST"
+                                else
+                                    echo "WARNING: Skipping invalid netgroup host: $NETGROUP_HOST" >&2
+                                fi
                             done
                         else
                             echo "WARNING: Netgroup $NETGROUP not found or empty" 1>&2
@@ -763,16 +1046,25 @@ $HOSTLIST"
                         if [ -n "$EXPANDED_HOSTS" ]; then
                             [ "$DEBUG" -ge 1 ] && echo "DEBUG: Expanded to: $EXPANDED_HOSTS" 1>&2
                             for h in $EXPANDED_HOSTS; do
-                                HOSTLIST="$h
+                                if validate_hostname "$h"; then
+                                    HOSTLIST="$h
 $HOSTLIST"
+                                else
+                                    echo "WARNING: Skipping invalid expanded host: $h" >&2
+                                fi
                             done
                         else
                             echo "WARNING: No hosts found matching pattern $2" 1>&2
                         fi
                     else
-                        # Regular host
-                        HOSTLIST="$2
+                        # Regular host - validate before adding
+                        if validate_hostname "$2"; then
+                            HOSTLIST="$2
 $HOSTLIST"
+                        else
+                            # validate_hostname already shows error message
+                            exit 1
+                        fi
                     fi
                     shift
                 done
@@ -822,8 +1114,13 @@ $HOSTLIST"
         ################
           -c)
                 EXPLICIT_COMMAND=1  # Mark that -c was used
-                THESCRIPT="$THESCRIPT
+                if validate_command "$2"; then
+                    THESCRIPT="$THESCRIPT
 $2"
+                else
+                    # validate_command already shows error message
+                    exit 1
+                fi
                 #set "" ; shift
                 shift 2
                 ;;
@@ -903,8 +1200,12 @@ $HOSTLIST"
                         if [ -n "$EXPANDED_HOSTS" ]; then
                             [ "$DEBUG" -ge 1 ] && echo "DEBUG: Expanded to: $EXPANDED_HOSTS" 1>&2
                             for h in $EXPANDED_HOSTS; do
-                                HOSTLIST="$h
+                                if validate_hostname "$h"; then
+                                    HOSTLIST="$h
 $HOSTLIST"
+                                else
+                                    echo "WARNING: Skipping invalid expanded host: $h" >&2
+                                fi
                             done
                         else
                             echo "WARNING: No hosts found matching pattern $1" 1>&2
