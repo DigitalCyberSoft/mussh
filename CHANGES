@@ -1,4 +1,17 @@
 $Id: CHANGES,v 1.7 2006/12/26 21:57:22 doughnut Exp $
+v1.2.3
+2025-07-06
+	- Added --screen option to launch SSH connections in GNU screen sessions
+	- Creates single screen session with multiple windows (one per host)
+	- Each window is automatically named after the target host
+	- Implemented screen session management with automatic creation and detection
+	- Modified ssh_connect() function to support both regular and screen modes
+	- Commands are sent to screen windows using 'screen -X stuff' with proper escaping
+	- Added user-friendly session attachment instructions in output
+	- Created test script (tests/test-screen.sh) for screen functionality
+	- Updated help documentation to explain screen feature usage
+	- Maintains full backward compatibility when --screen is not used
+
 v1.2.2
 2025-07-06
 	- Added zsh shell compatibility with automatic bash emulation

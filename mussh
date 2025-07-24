@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # $Id: mussh,v 1.12 2006/12/26 21:57:22 doughnut Exp $
-MUSSH_VERSION="1.2.2"
+MUSSH_VERSION="1.2.3"
 
 # Detect shell and set compatibility options
 if [ -n "$ZSH_VERSION" ]; then
