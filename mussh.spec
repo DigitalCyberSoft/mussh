@@ -4,15 +4,15 @@
 #
 Summary:	MUltihost SSH
 Name:		mussh
-Version:	1.2.3
+Version:	1.2.4
 Release:	1
 License:	GPL
 BuildArch:	noarch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Group:		Applications/System
 Source:		%{name}-%{version}.tgz
-URL:		http://www.sourceforge.net/projects/mussh
-Packager:	Dave Fogarty <dave@collegenet.com>
+URL:		https://github.com/DigitalCyberSoft/mussh
+Packager:	Digital Cyber Soft <apps@digitalcybersoft.com>
 
 %description
 Mussh is a shell script that allows you to execute a command or script
@@ -20,8 +20,11 @@ over ssh on multiple hosts with one command. When possible mussh will use
 ssh-agent and RSA/DSA keys to minimize the need to enter your password
 more than once.
 
+This is an enhanced fork of the original mussh utility from SourceForge
+(https://sourceforge.net/projects/mussh/) created by Dave Fogarty.
+
 %prep
-%setup -n mussh-1.2.3
+%setup -n mussh-1.2.4
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -41,10 +44,18 @@ install -m 644 mussh-completion.bash ${RPM_BUILD_ROOT}%{_sysconfdir}/bash_comple
 %{_sysconfdir}/bash_completion.d/mussh
 
 %changelog
-* Thu Jul 24 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.3-1
+* Thu Jul 24 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.4-1
 - Enhanced argument parsing to support quoted single-word commands
 - Fixed issue where single-word commands like "pwd" required spaces to be recognized
-- Improved command detection logic for better user experience
+- Improved command detection logic for better user experience with quoted commands
+
+* Sun Jul 06 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.3-1
+- Added --screen option to launch SSH connections in screen sessions
+- Each host gets its own named window within a single screen session
+- Implemented screen session management with automatic creation
+- Added screen mode support in ssh_connect() function
+- Added test script for screen functionality
+- Updated help documentation for screen feature
 
 * Sat Jul 06 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.2-1
 - Added zsh shell compatibility with automatic bash emulation
