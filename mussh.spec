@@ -4,7 +4,7 @@
 #
 Summary:	MUltihost SSH
 Name:		mussh
-Version:	1.2.4
+Version:	1.2.5
 Release:	1
 License:	GPL
 BuildArch:	noarch
@@ -24,7 +24,7 @@ This is an enhanced fork of the original mussh utility from SourceForge
 (https://sourceforge.net/projects/mussh/) created by Dave Fogarty.
 
 %prep
-%setup -n mussh-1.2.4
+%setup -n mussh-1.2.5
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -44,6 +44,10 @@ install -m 644 mussh-completion.bash ${RPM_BUILD_ROOT}%{_sysconfdir}/bash_comple
 %{_sysconfdir}/bash_completion.d/mussh
 
 %changelog
+* Mon Jul 20 2026 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.5-1
+- Rebuild from tagged source; published 1.2.4 artifacts lacked the temp-file quoting fixes
+- No new features
+
 * Thu Jul 24 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.4-1
 - Enhanced argument parsing to support quoted single-word commands
 - Fixed issue where single-word commands like "pwd" required spaces to be recognized

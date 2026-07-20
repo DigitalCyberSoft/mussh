@@ -1,4 +1,11 @@
 $Id: CHANGES,v 1.7 2006/12/26 21:57:22 doughnut Exp $
+v1.2.5
+2026-07-20
+	- Rebuild from tagged source: the published 1.2.4 artifacts were built
+	  from a pre-release tree and lacked the temp-file quoting fixes
+	  listed under 1.2.4; this release ships them
+	- No new features
+
 v1.2.4
 2025-07-24
 	- Fix quoted single-word commands (e.g. "pwd") not being recognized as commands
