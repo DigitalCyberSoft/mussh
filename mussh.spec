@@ -38,6 +38,7 @@ install -m 644 mussh-completion.bash ${RPM_BUILD_ROOT}%{_sysconfdir}/bash_comple
 
 %files
 %defattr(-, root, root)
+%license LICENSE
 %doc INSTALL README.md BUGS CHANGES EXAMPLES
 /usr/bin/mussh
 %{_mandir}/man1/*
@@ -61,7 +62,7 @@ install -m 644 mussh-completion.bash ${RPM_BUILD_ROOT}%{_sysconfdir}/bash_comple
 - Added test script for screen functionality
 - Updated help documentation for screen feature
 
-* Sat Jul 06 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.2-1
+* Sun Jul 06 2025 Digital Cyber Soft <apps@digitalcybersoft.com> 1.2.2-1
 - Added zsh shell compatibility with automatic bash emulation
 - Added macOS platform support with proper path detection
 - Created automated setup.sh installer with sudo handling

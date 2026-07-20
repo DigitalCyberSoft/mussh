@@ -1,0 +1,4 @@
+# Excluded from git archive and GitHub source archives
+CLAUDE.md export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore

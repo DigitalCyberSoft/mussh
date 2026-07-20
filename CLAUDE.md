@@ -26,7 +26,7 @@ rm -rf ~/mussh/build-tmp
 mkdir -p ~/mussh/build-tmp/src ~/mussh/build-tmp/mussh-1.X
 git -C ~/mussh archive v1.X | tar -x -C ~/mussh/build-tmp/src
 cd ~/mussh/build-tmp/src
-cp BUGS CHANGES EXAMPLES INSTALL README.md mussh mussh.1 mussh.spec mussh-completion.bash test ../mussh-1.X/
+cp BUGS CHANGES EXAMPLES INSTALL LICENSE README.md mussh mussh.1 mussh.spec mussh-completion.bash test ../mussh-1.X/
 cp -r tests ../mussh-1.X/
 
 # RPM
