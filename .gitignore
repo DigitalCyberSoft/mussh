@@ -4,6 +4,12 @@
 build-tmp/
 rpmbuild/
 
+# Release artifacts
+dist/
+*.tar.gz
+*.tgz
+*.deb
+
 # Backup files
 *~
 *.bak
